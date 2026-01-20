@@ -1,0 +1,6 @@
+vonage-audio-connector-server
+vonage>=3.3.1
+opentok>=2.23.0
+dotenv
+sounddevice
+numpy
