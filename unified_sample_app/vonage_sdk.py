@@ -9,8 +9,6 @@ class VonageSDK:
 
     When creating an instance, it will create the authentication objects and
     an HTTP Client needed for using Vonage APIs.
-    Use an instance of this class to access the Vonage APIs, e.g. to access
-    methods associated with the Vonage SMS API, call `vonage.sms.method_name()`.
     """
 
     def __init__(self, args):
