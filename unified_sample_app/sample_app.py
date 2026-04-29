@@ -34,7 +34,10 @@ async def main() -> None:
             opentok.generate_tokens()
             Process(target=opentok.start_audio_connector).start()
         else:
-            raise SystemExit("Error: Missing authentication.")
+            print(
+                "Warning: Missing authentication credentials/environment variables; "
+                "starting only the websocket server."
+            )
     except Exception as e:
         raise SystemExit(f"Error: {e}")
 
