@@ -1,0 +1,6 @@
+[2026-04-27T15:11:53Z] customer=Varun phone=+919873868905
+intent=shopping for walking shoes
+notes=Customer wants walking shoes in white, size 6.
+[2026-04-27T15:13:06Z] customer=Varun phone=+919873868905
+intent=walking shoe order placed
+notes=Order SHOE-20260427-AA0HOK confirmed for RunFast 900, white, size 6. Pickup at Downtown, April 28, 10 AM to 1 PM. Confirmation code: PU-GUUF3I. SMS sent.

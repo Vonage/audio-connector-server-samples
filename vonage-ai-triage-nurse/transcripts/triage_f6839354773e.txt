@@ -1,0 +1,6 @@
+[2026-04-21T11:37:44Z] patient=Sangeet Som phone=
+Q: May I have your full name, please?
+A: Full name is Sangeet Som.
+[2026-04-21T11:38:06Z] patient=Sangeet Som phone=+919873868905
+Q: Could you please provide your phone number, including the country code?
+A: My phone number is 9873868905. and country code is +91.

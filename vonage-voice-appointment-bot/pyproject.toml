@@ -1,0 +1,11 @@
+[project]
+name = "vonage-voice-appointment-bot"
+version = "0.1.0"
+description = "Vonage Voice API appointment booking agent using Pipecat + OpenAI."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pipecat-ai[openai,websocket,silero,runner]>=0.0.99",
+  "python-dotenv",
+  "uvicorn[standard]",
+]

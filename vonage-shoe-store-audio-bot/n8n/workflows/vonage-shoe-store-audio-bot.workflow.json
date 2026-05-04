@@ -1,0 +1,190 @@
+{
+  "name": "vonage-shoe-store-audio-bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shoe/transcript",
+        "responseMode": "responseNode"
+      },
+      "id": "s1",
+      "name": "Webhook Transcript",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, -400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"saved\": true, \"session_id\": ($json.session_id || ($json.body && $json.body.session_id) || \"\"), \"channel\": \"n8n\" } }}"
+      },
+      "id": "s2",
+      "name": "Respond Transcript",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-950, -400]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shoe/inventory",
+        "responseMode": "responseNode"
+      },
+      "id": "s3",
+      "name": "Webhook Inventory",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const CATALOG = [\n  { sku: 'RUN-FAST-900-BLK', name: 'RunFast 900', color: 'black', sizes: [7,7.5,8,8.5,9,9.5,10,10.5,11,12], price_usd: 129, qty: 8 },\n  { sku: 'RUN-FAST-900-WHT', name: 'RunFast 900', color: 'white', sizes: [6,7,8,9,10,11,12], price_usd: 129, qty: 4 },\n  { sku: 'CITY-WALK-2-BLK', name: 'CityWalk 2', color: 'black', sizes: [6,7,8,9,10,11], price_usd: 109, qty: 5 },\n  { sku: 'TRAIL-X-GRY', name: 'TrailX Pro', color: 'grey', sizes: [8,9,10,11,12,13], price_usd: 149, qty: 3 },\n  { sku: 'SLIP-ON-NVY', name: 'EasySlip', color: 'navy', sizes: [6,7,8,9,10], price_usd: 89, qty: 6 },\n];\n\nconst body = $input.first().json.body || $input.first().json;\nconst sizeStr = (body.size || '9').toString().replace(',', '.');\nconst size = parseFloat(sizeStr);\nconst colorReq = (body.color || '').toLowerCase().trim();\n\nlet matches = CATALOG.filter(i => i.sizes.includes(size));\nif (colorReq) {\n  const exact = matches.filter(i => i.color.includes(colorReq) || colorReq.includes(i.color));\n  if (exact.length) matches = exact;\n}\n\nconst items = matches.slice(0, 3).map(i => ({\n  sku: i.sku,\n  name: i.name,\n  size: size,\n  color: i.color,\n  price_usd: i.price_usd,\n  in_stock: i.qty > 0,\n  quantity_available: i.qty,\n}));\n\nconst alternatives = items.length === 0\n  ? CATALOG\n      .filter(i => Math.abs(i.sizes[Math.floor(i.sizes.length / 2)] - size) <= 1)\n      .slice(0, 2)\n      .map(i => ({ sku: i.sku, name: i.name, color: i.color, price_usd: i.price_usd, note: 'closest available size' }))\n  : [];\n\nreturn [{ json: { available: items.length > 0, items, alternatives, requested_size: size, requested_color: colorReq } }];"
+      },
+      "id": "s3c",
+      "name": "Code Inventory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-950, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "s4",
+      "name": "Respond Inventory",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-700, -100]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shoe/order",
+        "responseMode": "responseNode"
+      },
+      "id": "s5",
+      "name": "Webhook Order",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst now = new Date();\nconst datePart = now.toISOString().slice(0, 10).replace(/-/g, '');\nconst rand = Math.random().toString(36).substring(2, 8).toUpperCase();\nconst orderId = `SHOE-${datePart}-${rand}`;\n\nconst readyDate = new Date(now);\nreadyDate.setDate(readyDate.getDate() + 1);\nconst readyStr = readyDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });\n\nconst VALID_SKUS = ['RUN-FAST-900-BLK','RUN-FAST-900-WHT','CITY-WALK-2-BLK','TRAIL-X-GRY','SLIP-ON-NVY'];\nconst sku = body.sku || '';\n\nreturn [{ json: {\n  created: true,\n  order_id: orderId,\n  status: 'confirmed',\n  sku: sku,\n  sku_valid: VALID_SKUS.includes(sku),\n  size: body.size || '',\n  color: body.color || '',\n  quantity: body.quantity || 1,\n  customer_name: body.customer_name || '',\n  payment_method: body.payment_method || 'pay-in-store',\n  estimated_ready: readyStr,\n  created_at: now.toISOString(),\n}}];"
+      },
+      "id": "s5c",
+      "name": "Code Order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-950, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "s6",
+      "name": "Respond Order",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-700, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shoe/pickup",
+        "responseMode": "responseNode"
+      },
+      "id": "s7",
+      "name": "Webhook Pickup",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst STORES = ['Downtown', 'Eastside Mall', 'Westpark Center'];\nconst locationReq = (body.store_location || 'Downtown').toLowerCase();\nconst resolvedStore = STORES.find(s => s.toLowerCase().includes(locationReq) || locationReq.includes(s.toLowerCase().split(' ')[0])) || 'Downtown';\n\nconst slots = [];\nfor (let d = 1; d <= 4; d++) {\n  const dt = new Date();\n  dt.setDate(dt.getDate() + d);\n  if (dt.getDay() === 0) continue;\n  const label = dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });\n  slots.push({ day: label, window: '10 AM to 1 PM', slot_id: `PKP-${d}A` });\n  slots.push({ day: label, window: '3 PM to 6 PM', slot_id: `PKP-${d}B` });\n  if (slots.length >= 6) break;\n}\n\nconst preferred = (body.pickup_window || '').toLowerCase();\nconst now = new Date();\nconst today = new Date(now.getFullYear(), now.getMonth(), now.getDate());\n\nfunction isPastPickupRequest(text) {\n  if (!text) return false;\n  if (/(yesterday|last week|last monday|last tuesday|last wednesday|last thursday|last friday|last saturday|last sunday)/.test(text)) {\n    return true;\n  }\n\n  const isoMatch = text.match(/\\b(\\d{4})-(\\d{2})-(\\d{2})\\b/);\n  if (isoMatch) {\n    const requested = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));\n    if (requested < today) return true;\n  }\n\n  const monthMatch = text.match(/\\b(january|february|march|april|may|june|july|august|september|october|november|december)\\s+(\\d{1,2})\\b/);\n  if (monthMatch) {\n    const requested = new Date(`${monthMatch[1]} ${monthMatch[2]}, ${now.getFullYear()}`);\n    if (!Number.isNaN(requested.getTime()) && requested < today) return true;\n  }\n\n  const timeMatch = text.includes('today') ? text.match(/\\b(1[0-2]|0?[1-9])(?::([0-5]\\d))?\\s*(am|pm)\\b/) : null;\n  if (timeMatch) {\n    let hour = Number(timeMatch[1]) % 12;\n    const minute = Number(timeMatch[2] || 0);\n    if (timeMatch[3] === 'pm') hour += 12;\n    const requested = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);\n    if (requested < now) return true;\n  }\n\n  return false;\n}\n\nconst matched = slots.find(s =>\n  preferred && (preferred.includes(s.window.toLowerCase()) || preferred.includes(s.day.toLowerCase().split(',')[0]))\n) || slots[0];\n\nif (isPastPickupRequest(preferred)) {\n  return [{ json: {\n    success: false,\n    booked: false,\n    reason: 'Requested pickup time is in the past.',\n    order_id: body.order_id || '',\n    store_location: resolvedStore,\n    available_slots: slots.slice(0, 4),\n  }}];\n}\n\nconst confCode = 'PU-' + Math.random().toString(36).substring(2, 8).toUpperCase();\n\nreturn [{ json: {\n  booked: true,\n  order_id: body.order_id || '',\n  store_location: resolvedStore,\n  pickup_window: `${matched.day}, ${matched.window}`,\n  slot_id: matched.slot_id,\n  confirmation_code: confCode,\n  available_slots: slots.slice(0, 4),\n}}];"
+      },
+      "id": "s7c",
+      "name": "Code Pickup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-950, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "s8",
+      "name": "Respond Pickup",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-700, 500]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shoe/sms",
+        "responseMode": "responseNode"
+      },
+      "id": "s9",
+      "name": "Webhook SMS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1200, 800]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.nexmo.com/sms/json",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "api_key",    "value": "={{$env.SMS_API_KEY}}" },
+            { "name": "api_secret", "value": "={{$env.SMS_API_SECRET}}" },
+            { "name": "to",         "value": "={{$json.phone || ($json.body && $json.body.phone) || ''}}" },
+            { "name": "from",       "value": "={{$env.SMS_FROM || 'Vonage APIs'}}" },
+            { "name": "text",       "value": "={{$json.message || ($json.body && $json.body.message) || ''}}" }
+          ]
+        },
+        "options": {
+          "response": { "response": { "fullResponse": false, "responseFormat": "json" } }
+        }
+      },
+      "id": "s10",
+      "name": "Send SMS via Vonage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-950, 800]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": (($json.messages && $json.messages[0] && $json.messages[0].status === \"0\") ? true : false), \"sent\": (($json.messages && $json.messages[0] && $json.messages[0].status === \"0\") ? true : false), \"provider\": \"vonage\", \"message_uuid\": (($json.messages && $json.messages[0] && $json.messages[0][\"message-id\"]) || \"\"), \"status\": (($json.messages && $json.messages[0] && $json.messages[0].status) || \"unknown\"), \"error_text\": (($json.messages && $json.messages[0] && $json.messages[0][\"error-text\"]) || \"\"), \"to\": (($json.messages && $json.messages[0] && $json.messages[0].to) || \"\"), \"from\": ($env.SMS_FROM || \"Vonage APIs\") } }}"
+      },
+      "id": "s11",
+      "name": "Respond SMS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-700, 800]
+    }
+  ],
+  "connections": {
+    "Webhook Transcript": { "main": [[{ "node": "Respond Transcript", "type": "main", "index": 0 }]] },
+    "Webhook Inventory":  { "main": [[{ "node": "Code Inventory",     "type": "main", "index": 0 }]] },
+    "Code Inventory":     { "main": [[{ "node": "Respond Inventory",  "type": "main", "index": 0 }]] },
+    "Webhook Order":      { "main": [[{ "node": "Code Order",         "type": "main", "index": 0 }]] },
+    "Code Order":         { "main": [[{ "node": "Respond Order",      "type": "main", "index": 0 }]] },
+    "Webhook Pickup":     { "main": [[{ "node": "Code Pickup",        "type": "main", "index": 0 }]] },
+    "Code Pickup":        { "main": [[{ "node": "Respond Pickup",     "type": "main", "index": 0 }]] },
+    "Webhook SMS":        { "main": [[{ "node": "Send SMS via Vonage","type": "main", "index": 0 }]] },
+    "Send SMS via Vonage":{ "main": [[{ "node": "Respond SMS",        "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "versionId": "2",
+  "active": false
+}

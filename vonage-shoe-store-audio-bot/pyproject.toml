@@ -1,0 +1,17 @@
+[project]
+name = "vonage-shoe-store-audio-bot"
+version = "0.1.0"
+description = "Shoe store workflow automation voice bot using Vonage Audio Connector + Pipecat + OpenAI."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pipecat-ai[openai,websocket,silero,runner]>=0.0.99",
+  "opentok>=3.0.0",
+  "vonage>=3.3.1",
+  "vonage-video>=1.0.0",
+  "httpx>=0.27.0",
+  "fastapi>=0.111.0",
+  "uvicorn>=0.29.0",
+  "loguru>=0.7.0",
+  "python-dotenv",
+]

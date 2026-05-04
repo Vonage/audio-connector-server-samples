@@ -1,0 +1,6 @@
+[2026-04-24T08:26:27Z] customer=Varun phone=+919873868905
+intent=Placed order for RunFast 900 white size 6
+notes=Order ID SHOE-20260424-J2DZCM created. Waiting for customer to choose store and pickup window.
+[2026-04-24T08:27:28Z] customer=Varun phone=+919873868905
+intent=Reserved Downtown store pickup Saturday 3 PM to 6 PM
+notes=Pickup code PU-4WCPKR. SMS pending to send.
