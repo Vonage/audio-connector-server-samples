@@ -56,8 +56,7 @@ The `sample_app.py` is a demonstration application that showcases the integratio
 
     #Optional (default value for opentok:"https://api.opentok.com" and vonage: "api.vonage.com")
     API_URL=
-
-    #Do not use any of the fields with quotes like "" just use it without quotes like APPLICATION_ID=sk-proj-toaK2p....
+    
     ```
 
    **Note:** If authentication variables are not provided (`APPLICATION_ID` + `PRIVATE_KEY` or `API_KEY` + `API_SECRET`), the app still starts the websocket server and prints a warning. In that mode, the app will not attempt to connect with a session, but you can still test the WebSocket server functionality (e.g., using ngrok and a WebSocket client).

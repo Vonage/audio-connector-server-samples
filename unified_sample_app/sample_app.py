@@ -16,6 +16,10 @@ from opentok_sdk import OpentokSDK
 from multiprocessing import Process
 
 
+HOST = "127.0.0.1"
+PORT = 8765
+
+
 # ---- main -------------------------------------------------------------------
 
 
@@ -34,14 +38,13 @@ async def main() -> None:
             opentok.generate_tokens()
             Process(target=opentok.start_audio_connector).start()
         else:
-            print(
-                "Warning: Missing authentication credentials/environment variables; "
-                "starting only the websocket server."
-            )
+            print("Warning: starting only the websocket server.")
     except Exception as e:
         raise SystemExit(f"Error: {e}")
 
-    print("\nSuccess! Your Video session should now stream audio to/from:", args.ws_uri)
+
+    ws_uri = args.ws_uri or f"ws://{HOST}:{PORT}"
+    print(f"\nSuccess! Using WebSocket URI: {ws_uri}")
 
     await asyncio.Event().wait()
 
@@ -51,8 +54,8 @@ async def start_server():
     video_api = Video()
     # Define the server configuration
     config = AudioConnectorServerConfig(
-        host="127.0.0.1",
-        port=8765,
+        host=HOST,
+        port=PORT,
         on_start=helper.on_start,
         on_connect=helper.on_connect,
     )
