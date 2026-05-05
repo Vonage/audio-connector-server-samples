@@ -152,6 +152,6 @@ def read_env_variable():
         missing = [k for k in missing if k not in ["application-id", "private-key"]]
 
     if missing:
-        raise SystemExit(f"Missing required args/env: {', '.join(missing)}")
+        print(f"Missing args/env: {', '.join(missing)}")
 
     return args
