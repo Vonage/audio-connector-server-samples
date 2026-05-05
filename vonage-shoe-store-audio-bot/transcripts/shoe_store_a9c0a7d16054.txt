@@ -1,0 +1,12 @@
+[2026-04-24T13:11:19Z] customer=Varun Pratap Singh phone=+919873868905
+intent=start order
+notes=customer confirmed name and phone
+[2026-04-24T13:12:13Z] customer=Varun Pratap Singh phone=+919873868905
+intent=order placed
+notes=Order SHOE-20260424-I8DD2O for RunFast 900 white size 6
+[2026-04-24T13:12:46Z] customer=Varun Pratap Singh phone=+919873868905
+intent=pickup reserved
+notes=Pickup at Downtown, Saturday, April 25, 3 PM to 6 PM. Confirmation code PU-K6WXX3
+[2026-04-24T13:13:55Z] customer=Varun Pratap Singh phone=+919873868905
+intent=call end
+notes=Customer finished shopping, no more requests.

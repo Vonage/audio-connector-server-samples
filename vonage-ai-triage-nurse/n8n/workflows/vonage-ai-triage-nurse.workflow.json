@@ -1,0 +1,272 @@
+{
+  "name": "vonage-ai-triage-nurse",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "triage/transcript",
+        "responseMode": "responseNode"
+      },
+      "id": "n1",
+      "name": "Webhook Transcript",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"stored\": true } }}"
+      },
+      "id": "n2",
+      "name": "Respond Transcript",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -950,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "triage/availability",
+        "responseMode": "responseNode"
+      },
+      "id": "n3",
+      "name": "Webhook Availability",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"available_slots\": [ { \"date\": ($json.preferred_date || ($json.body && $json.body.preferred_date) || \"next-business-day\"), \"time\": \"10:30 AM\" }, { \"date\": ($json.preferred_date || ($json.body && $json.body.preferred_date) || \"next-business-day\"), \"time\": \"2:00 PM\" } ] } }}"
+      },
+      "id": "n4",
+      "name": "Respond Availability",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -950,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "triage/schedule",
+        "responseMode": "responseNode"
+      },
+      "id": "n5",
+      "name": "Webhook Schedule",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"appointment_id\": \"APT-\" + (($json.triage_session_id || ($json.body && $json.body.triage_session_id) || \"DEMO\").slice(0, 8).toUpperCase()), \"date\": ($json.date || ($json.body && $json.body.date) || \"next-business-day\"), \"time\": ($json.time || ($json.body && $json.body.time) || \"10:30 AM\") } }}"
+      },
+      "id": "n6",
+      "name": "Respond Schedule",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -950,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "triage/sms",
+        "responseMode": "responseNode"
+      },
+      "id": "n7",
+      "name": "Webhook SMS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.nexmo.com/sms/json",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "={{$env.SMS_API_KEY}}"
+            },
+            {
+              "name": "api_secret",
+              "value": "={{$env.SMS_API_SECRET}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$json.phone || ''}}"
+            },
+            {
+              "name": "from",
+              "value": "={{$env.SMS_FROM || $json.from || 'Vonage APIs'}}"
+            },
+            {
+              "name": "text",
+              "value": "={{$json.message || ''}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "n8",
+      "name": "Send SMS via Vonage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -950,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"sent\": (($json.messages && $json.messages[0] && $json.messages[0].status === \"0\") ? true : false), \"provider\": \"vonage\", \"message_uuid\": (($json.messages && $json.messages[0] && $json.messages[0][\"message-id\"]) || \"\"), \"status\": (($json.messages && $json.messages[0] && $json.messages[0].status) || \"unknown\"), \"to\": (($json.messages && $json.messages[0] && $json.messages[0].to) || ($item(0).$node[\"Webhook SMS\"].json.body && $item(0).$node[\"Webhook SMS\"].json.body.phone) || \"\"), \"from\": ($env.SMS_FROM || (($item(0).$node[\"Webhook SMS\"].json.body && $item(0).$node[\"Webhook SMS\"].json.body.from) || \"Vonage APIs\")), \"text\": (($item(0).$node[\"Webhook SMS\"].json.body && $item(0).$node[\"Webhook SMS\"].json.body.message) || \"\") } }}"
+      },
+      "id": "n9",
+      "name": "Respond SMS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "triage/doctor-notify",
+        "responseMode": "responseNode"
+      },
+      "id": "n10",
+      "name": "Webhook Doctor Notify",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"notified\": true, \"doctor_join_url\": ($json.doctor_join_url || ($json.body && $json.body.doctor_join_url) || ''), \"channel\": \"n8n\" } }}"
+      },
+      "id": "n11",
+      "name": "Respond Doctor Notify",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -950,
+        600
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Transcript": {
+      "main": [
+        [
+          {
+            "node": "Respond Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Availability": {
+      "main": [
+        [
+          {
+            "node": "Respond Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Schedule": {
+      "main": [
+        [
+          {
+            "node": "Respond Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook SMS": {
+      "main": [
+        [
+          {
+            "node": "Send SMS via Vonage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send SMS via Vonage": {
+      "main": [
+        [
+          {
+            "node": "Respond SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Doctor Notify": {
+      "main": [
+        [
+          {
+            "node": "Respond Doctor Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "active": false
+}

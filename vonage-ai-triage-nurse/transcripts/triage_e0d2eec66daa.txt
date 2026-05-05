@@ -1,0 +1,15 @@
+[2026-04-29T11:23:16Z] patient=Varun phone=+919873868905
+Q: Please confirm your phone number digit by digit: +91 9 8 7 3 8 6 8 9 0 5.
+A: It is correct.
+[2026-04-29T11:23:37Z] patient=Varun phone=+919873868905
+Q: Could you briefly describe your symptoms or the reason for your visit?
+A: I'm having a cough and fever.
+[2026-04-29T11:23:55Z] patient=Varun phone=+919873868905
+Q: Anything else you would like to add about your symptoms?
+A: The patient reported experiencing sharp chest pain that started on February 20th.
+[2026-04-29T11:24:21Z] patient=Varun phone=+919873868905
+Q: Which date would you prefer for your appointment?
+A: First May
+[2026-04-29T11:24:47Z] patient=Varun phone=+919873868905
+Q: Which time works best for you on May 1st?
+A: 10:30 AM

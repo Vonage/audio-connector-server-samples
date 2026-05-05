@@ -1,0 +1,3 @@
+[2026-04-17T05:50:57Z] patient=Demo Patient phone=+919873868905
+Q: How are you feeling?
+A: Fever and cough

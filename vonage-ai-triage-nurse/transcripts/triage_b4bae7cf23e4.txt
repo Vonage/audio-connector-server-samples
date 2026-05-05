@@ -1,0 +1,24 @@
+[2026-04-29T11:36:08Z] patient=Varun phone=
+Q: May I have your full name, please?
+A: Varun
+[2026-04-29T11:36:42Z] patient=Varun phone=9873868905
+Q: Could you please tell me your phone number, including the country code?
+A: 9873868905
+[2026-04-29T11:37:22Z] patient=Varun phone=+91987868905
+Q: Is your phone number plus nine one nine eight seven three eight six eight nine zero five?
+A: Yes.
+[2026-04-29T11:37:41Z] patient=Varun phone=+91987868905
+Q: Can you briefly describe your main symptoms or health concern?
+A: fever
+[2026-04-29T11:38:04Z] patient=Varun phone=+91987868905
+Q: When would you like to schedule your appointment?
+A: Anytime
+[2026-04-29T11:38:27Z] patient=Varun phone=+91987868905
+Q: Which available appointment time works best for you?
+A: 2:00 PM
+[2026-04-29T11:38:27Z] patient=Varun phone=+91987868905
+Q: Do you have any additional symptoms?
+A: Coughing and fever are typical symptoms of the flu.
+[2026-04-29T11:38:51Z] patient=Varun phone=+91987868905
+Q: Could you please choose a future time or date for your appointment?
+A: tomorrow, 10:30 am
