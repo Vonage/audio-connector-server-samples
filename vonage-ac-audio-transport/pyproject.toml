@@ -1,0 +1,16 @@
+[project]
+name = "vonage-ac-audio-transport"
+version = "0.1.0"
+description = "Vonage Audio Connector example using JSON audio transport (base64-encoded PCM over WebSocket)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pipecat-ai[openai,websocket,silero,runner]>=0.0.99",
+  "opentok>=3.0.0",
+  "vonage>=3.3.1",
+  "vonage-video>=1.0.0",
+  "sounddevice>=0.4.0",
+  "python-dotenv",
+  "pydub>=0.25",
+  "PyJWT>=2.8.0",
+]
