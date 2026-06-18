@@ -137,6 +137,6 @@ POST /connect  ──────────▶ Vonage Cloud
 | Feature | Other examples | This example |
 |---------|---------------|--------------|
 | WebSocket frame format | Raw binary PCM | JSON with base64 audio |
-| Serializer | `VonageFrameSerializer` | `VonageJsonTransportSerializer` (custom) |
+| Serializer | `VonageFrameSerializer` | `VonageFrameSerializer` with `audio_transport="json"` |
 | Audio Connector option | `bidirectional: true` | `bidirectional: true` + `audioTransport: json/base64` |
 | Metadata support | Not possible | Can add `static_fields` to every frame |

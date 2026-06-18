@@ -14,3 +14,6 @@ dependencies = [
   "pydub>=0.25",
   "PyJWT>=2.8.0",
 ]
+
+[tool.setuptools]
+py-modules = ["bot", "server"]
