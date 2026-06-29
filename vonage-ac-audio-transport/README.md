@@ -46,7 +46,7 @@ ws_opts = {
     "uri": ws_uri,
     "audioRate": 16000,
     "bidirectional": True,
-    "audio_transport": {
+    "audioTransport": {
         "transport": "json",
         "encoding": "base64",
     },

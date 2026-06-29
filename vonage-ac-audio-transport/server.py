@@ -43,13 +43,6 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from opentok import Client as OpenTokClient
 from vonage import Auth, HttpClientOptions, Vonage
-from vonage_video import (
-    AudioConnectorOptions,
-    AudioConnectorWebSocket,
-    AudioTransport,
-    AudioTransportConfig,
-    TokenOptions,
-)
 
 load_dotenv(override=True)
 
@@ -74,7 +67,7 @@ async def connect_audio_connector(
     private_key: str,
 ) -> Any:
     """
-    Calls the Audio Connector connect API with audio_transport set to JSON/base64.
+    Calls the Audio Connector connect API with audioTransport set to JSON/base64.
     Both the OpenTok and Vonage SDK paths include the audioTransport header.
     """
     logger.info(
@@ -93,7 +86,7 @@ async def connect_audio_connector(
             "uri": ws_uri,
             "audioRate": audio_rate,
             "bidirectional": True,
-            "audio_transport": {
+            "audioTransport": {
                 "transport": "json",
                 "encoding": "base64",
             },
@@ -101,6 +94,14 @@ async def connect_audio_connector(
         return ot.connect_audio_to_websocket(session_id, token, ws_opts)
 
     def _call_vonage_connect() -> Any:
+        from vonage_video import (
+            AudioConnectorOptions,
+            AudioConnectorWebSocket,
+            AudioTransport,
+            AudioTransportConfig,
+            TokenOptions,
+        )
+
         auth = Auth(
             application_id=application_id,
             private_key=private_key,
