@@ -106,7 +106,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rest.nexmo.com/sms/json",
+        "url": "https://api.vonage.com/v1/messages",
         "sendBody": true,
         "contentType": "form-urlencoded",
         "bodyParameters": {
