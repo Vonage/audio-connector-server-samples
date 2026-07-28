@@ -117,7 +117,7 @@ async def _send_sms_direct(phone: str, message: str) -> dict[str, Any]:
 
     try:
         async with httpx.AsyncClient(timeout=12.0) as client:
-            response = await client.post("https://rest.nexmo.com/sms/json", data=payload)
+            response = await client.post("https://api.vonage.com/v1/messages", data=payload)
             response.raise_for_status()
             data = response.json() if response.text else {}
             first = (data.get("messages") or [{}])[0]
