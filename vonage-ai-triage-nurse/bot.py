@@ -1,5 +1,6 @@
 import os
 import uuid
+import base64
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -107,17 +108,28 @@ async def _send_sms_direct(phone: str, message: str) -> dict[str, Any]:
             "error": "Missing SMS_API_KEY/SMS_API_SECRET",
         }
 
+
+
     payload = {
         "api_key": api_key,
         "api_secret": api_secret,
         "to": phone,
         "from": sms_from,
+        "channel": "sms",
+        "message_type": "text",
         "text": message,
     }
 
     try:
+        credentials = base64.b64encode(f"{api_key}:{api_secret}".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
         async with httpx.AsyncClient(timeout=12.0) as client:
-            response = await client.post("https://rest.nexmo.com/sms/json", data=payload)
+            response = await client.post("https://api.nexmo.com/v1/messages", headers= headers, json=payload)
             response.raise_for_status()
             data = response.json() if response.text else {}
             first = (data.get("messages") or [{}])[0]

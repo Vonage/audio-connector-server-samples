@@ -106,33 +106,24 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rest.nexmo.com/sms/json",
-        "sendBody": true,
-        "contentType": "form-urlencoded",
-        "bodyParameters": {
+        "url": "=https://{{ $env.SMS_API_KEY }}:{{ $env.SMS_API_SECRET }}@api.nexmo.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
           "parameters": [
             {
-              "name": "api_key",
-              "value": "={{$env.SMS_API_KEY}}"
+              "name": "Content-Type",
+              "value": "application/json"
             },
             {
-              "name": "api_secret",
-              "value": "={{$env.SMS_API_SECRET}}"
-            },
-            {
-              "name": "to",
-              "value": "={{$json.phone || ''}}"
-            },
-            {
-              "name": "from",
-              "value": "={{$env.SMS_FROM || $json.from || 'Vonage APIs'}}"
-            },
-            {
-              "name": "text",
-              "value": "={{$json.message || ''}}"
+              "name": "Accept",
+              "value": "application/json"
             }
           ]
         },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ to: $json.body.phone || $json.phone || '', from: $env.SMS_FROM || ($json.body && $json.body.from) || $json.from || 'Vonage APIs', channel: 'sms', message_type: 'text', text: $json.body.message || $json.message || '' }) }}",
         "options": {
           "response": {
             "response": {
