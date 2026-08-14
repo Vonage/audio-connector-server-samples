@@ -1,0 +1,23 @@
+vonage-ai-triage-nurse/n8n/README.md
+  h_883d4b2a90d1af 21
+vonage-ai-triage-nurse/n8n/env.example
+  h_883d4b2a90d1af 14-15
+vonage-ai-triage-nurse/bot.py
+  h_883d4b2a90d1af 3,111-112,118-119,124-127,130,132
+  h_883d4b2a90d1af 128-129
+vonage-ai-triage-nurse/n8n/workflows/vonage-ai-triage-nurse.workflow.json
+  h_883d4b2a90d1af 109-111,114-115,118-119,123-126
+vonage-ai-triage-nurse/n8n/.gitignore
+  h_883d4b2a90d1af 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e624cbfb6aa54dfdff90624b9d94b094be1545c5",
+  "prompts": {},
+  "humans": {
+    "h_883d4b2a90d1af": {
+      "author": "Rafay Hamid <rafay.hamid@vonage.com>"
+    }
+  }
+}
