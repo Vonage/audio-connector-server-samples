@@ -1,0 +1,14 @@
+vonage-ai-triage-nurse/pyproject.toml
+  h_883d4b2a90d1af 8-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "21fe82c1f96d18f825944225982a85061fe8ec4f",
+  "prompts": {},
+  "humans": {
+    "h_883d4b2a90d1af": {
+      "author": "Rafay Hamid <rafay.hamid@vonage.com>"
+    }
+  }
+}
