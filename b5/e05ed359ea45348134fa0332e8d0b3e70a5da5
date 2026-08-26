@@ -1,0 +1,14 @@
+vonage-ai-triage-nurse/n8n/env.example
+  h_883d4b2a90d1af 21-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "b5e05ed359ea45348134fa0332e8d0b3e70a5da5",
+  "prompts": {},
+  "humans": {
+    "h_883d4b2a90d1af": {
+      "author": "Rafay Hamid <rafay.hamid@vonage.com>"
+    }
+  }
+}
