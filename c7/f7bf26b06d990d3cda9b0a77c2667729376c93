@@ -1,0 +1,16 @@
+vonage-ai-triage-nurse/pyproject.toml
+  h_883d4b2a90d1af 6
+vonage-ai-triage-nurse/uv.lock
+  h_883d4b2a90d1af 3,7,487-495,514-519,544,553,555,574,581,583,1300,1304,1309-1321,1323,1332,1442-1446,1608,1611-1632,1634,1636,1641-1644,1647,1651-1652,1657,1659,1971-1972,2186,2332,2443,2659,2668,2672
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "c7f7bf26b06d990d3cda9b0a77c2667729376c93",
+  "prompts": {},
+  "humans": {
+    "h_883d4b2a90d1af": {
+      "author": "Rafay Hamid <rafay.hamid@vonage.com>"
+    }
+  }
+}
