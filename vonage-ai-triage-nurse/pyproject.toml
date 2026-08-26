@@ -3,7 +3,7 @@ name = "vonage-ai-triage-nurse"
 version = "0.1.0"
 description = "Vonage Connect API + Pipecat voice triage nurse with N8N scheduling"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
   "pipecat-ai[openai,websocket,silero,runner]>=1.4.0",
   "fastapi>=0.137.0",
