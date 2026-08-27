@@ -3,9 +3,9 @@ name = "vonage-ac-translation-bot"
 version = "0.1.0"
 description = "Vonage Audio Connector translation bot using Pipecat + OpenAI Realtime"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-  "pipecat-ai[openai,websocket,silero,runner]>=0.0.99",
+  "pipecat-ai[openai,websocket,silero,runner]>=1.8.0",
   "opentok>=3.0.0",
   "vonage>=3.3.1",
   "python-dotenv",
