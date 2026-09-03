@@ -1,0 +1,21 @@
+vonage-ai-triage-nurse/env.example
+  h_883d4b2a90d1af 1
+vonage-ai-triage-nurse/bot.py
+  h_883d4b2a90d1af 228-235
+  h_883d4b2a90d1af 20-21,26,35-36,236,244-248,251,559-565,626
+vonage-ai-triage-nurse/README.md
+  h_883d4b2a90d1af 3-5,11,13,20,24,51-55,71,108,152,155
+vonage-ai-triage-nurse/server.py
+  h_883d4b2a90d1af 13-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "cf3b7adc49df51f1e11d874725e6a73d01b89012",
+  "prompts": {},
+  "humans": {
+    "h_883d4b2a90d1af": {
+      "author": "Rafay Hamid <rafay.hamid@vonage.com>"
+    }
+  }
+}
