@@ -1,5 +1,6 @@
 import os
 import uuid
+import base64
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -20,9 +21,7 @@ from pipecat.processors.frame_processor import FrameDirection
 from pipecat.runner.types import RunnerArguments
 from pipecat.serializers.vonage import VonageFrameSerializer
 from pipecat.services.llm_service import FunctionCallParams
-from pipecat.services.openai.llm import OpenAILLMService
-from pipecat.services.openai.stt import OpenAIRealtimeSTTService
-from pipecat.services.openai.tts import OpenAITTSService
+from pipecat.services.aws.nova_sonic.llm import AWSNovaSonicLLMService
 from pipecat.transports.base_transport import BaseTransport
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
@@ -107,17 +106,28 @@ async def _send_sms_direct(phone: str, message: str) -> dict[str, Any]:
             "error": "Missing SMS_API_KEY/SMS_API_SECRET",
         }
 
+
+
     payload = {
         "api_key": api_key,
         "api_secret": api_secret,
         "to": phone,
         "from": sms_from,
+        "channel": "sms",
+        "message_type": "text",
         "text": message,
     }
 
     try:
+        credentials = base64.b64encode(f"{api_key}:{api_secret}".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
         async with httpx.AsyncClient(timeout=12.0) as client:
-            response = await client.post("https://api.vonage.com/v1/messages", data=payload)
+            response = await client.post("https://api.nexmo.com/v1/messages", headers= headers, json=payload)
             response.raise_for_status()
             data = response.json() if response.text else {}
             first = (data.get("messages") or [{}])[0]
@@ -215,23 +225,18 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: in
         logger.warning("OPENAI_API_KEY not set. Voice agent cannot run.")
         return
 
-    llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"))
-
-    stt = OpenAIRealtimeSTTService(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        turn_detection=None,
-        settings=OpenAIRealtimeSTTService.Settings(
-            model="gpt-4o-transcribe",
-            prompt="Expect medical terms, symptoms, dates, and appointment scheduling language.",
-            noise_reduction="near_field",
-        ),
-    )
-
-    tts = OpenAITTSService(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        settings=OpenAITTSService.Settings(
-            voice="coral",
-            instructions="Speak clearly and calmly. There may be literal \\n characters; ignore them when speaking.",
+    nova_sonic = AWSNovaSonicLLMService(
+        access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        session_token=os.getenv("AWS_SESSION_TOKEN"),
+        region=os.getenv("AWS_REGION"),
+        settings=AWSNovaSonicLLMService.Settings(
+            voice="tiffany",
+            system_instruction=(
+                "Speak clearly and calmly. "
+                "Expect medical terms, symptoms, dates, and appointment scheduling language. "
+                "There may be literal \n characters; ignore them when speaking."
+            ),
         ),
     )
 
@@ -454,10 +459,10 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: in
         await params.result_callback({"success": True})
         await params.llm.push_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
-    llm.register_function("save_triage_transcript", save_triage_transcript)
-    llm.register_function("lookup_appointment_availability", lookup_appointment_availability)
-    llm.register_function("schedule_appointment_and_notify", schedule_appointment_and_notify)
-    llm.register_function("end_call", end_call)
+    nova_sonic.register_function("save_triage_transcript", save_triage_transcript)
+    nova_sonic.register_function("lookup_appointment_availability", lookup_appointment_availability)
+    nova_sonic.register_function("schedule_appointment_and_notify", schedule_appointment_and_notify)
+    nova_sonic.register_function("end_call", end_call)
 
     tools = ToolsSchema(
         standard_tools=[
@@ -548,10 +553,8 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: in
     pipeline = Pipeline(
         [
             transport.input(),
-            stt,
             context_aggregator.user(),
-            llm,
-            tts,
+            nova_sonic,
             transport.output(),
             context_aggregator.assistant(),
         ]

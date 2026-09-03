@@ -18,7 +18,7 @@ Set in `.env`:
 4. SMS_FROM
 
 SMS values are from https://dashboard.vonage.com -> API Settings and Sender IDs.
-This workflow sends real SMS through Vonage SMS API.
+This workflow sends real SMS through Vonage Messages API.
 
 ### 2. Start N8N
 
