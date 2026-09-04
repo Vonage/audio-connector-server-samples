@@ -1,0 +1,14 @@
+vonage-ai-triage-nurse/uv.lock
+  h_883d4b2a90d1af 1-3675
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b1652fa0c02d685302741dfb1e83e801d3695ce6",
+  "prompts": {},
+  "humans": {
+    "h_883d4b2a90d1af": {
+      "author": "Rafay Hamid <rafay.hamid@vonage.com>"
+    }
+  }
+}
