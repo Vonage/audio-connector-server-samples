@@ -10,7 +10,10 @@ Run:
 Env required:
   VONAGE_SESSION_ID
   WS_URI                       (public wss://.../ws)
-  OPENAI_API_KEY
+  AWS_ACCESS_KEY_ID            (Bedrock Nova Sonic)
+  AWS_SECRET_ACCESS_KEY        (Bedrock Nova Sonic)
+  AWS_REGION                   (us-east-1 / us-west-2 / ap-northeast-1)
+  # AWS_SESSION_TOKEN          (only for temporary/STS credentials)
 
 Auth (choose one):
   VONAGE_APPLICATION_ID + VONAGE_PRIVATE_KEY
