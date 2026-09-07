@@ -5,7 +5,7 @@ description = "Vonage Connect API + Pipecat voice triage nurse with N8N scheduli
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "pipecat-ai[openai,websocket,silero,runner]>=1.8.0",
+  "pipecat-ai[aws-nova-sonic,websocket,silero,runner]>=1.8.0",
   "fastapi>=0.110.0",
   "uvicorn[standard]>=0.29.0",
   "loguru>=0.7.2",

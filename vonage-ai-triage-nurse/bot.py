@@ -1,5 +1,6 @@
 import os
 import uuid
+import base64
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -16,13 +17,13 @@ from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
+from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.processors.frame_processor import FrameDirection
 from pipecat.runner.types import RunnerArguments
 from pipecat.serializers.vonage import VonageFrameSerializer
 from pipecat.services.llm_service import FunctionCallParams
-from pipecat.services.openai.llm import OpenAILLMService
-from pipecat.services.openai.stt import OpenAIRealtimeSTTService
-from pipecat.services.openai.tts import OpenAITTSService
+from pipecat.services.aws.nova_sonic.llm import AWSNovaSonicLLMService, AudioConfig
 from pipecat.transports.base_transport import BaseTransport
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
@@ -31,6 +32,8 @@ from pipecat.transports.websocket.fastapi import (
 
 load_dotenv(override=True)
 
+# Matches the working Vonage Nova Sonic sample: Nova Sonic emits 24kHz; the
+# transport resamples to the Vonage connector rate. Input stays 16kHz.
 AUDIO_OUT_SAMPLE_RATE: int = 24_000
 VONAGE_AUDIO_PACKET_BYTES: int = 640
 # 640 bytes = 20ms @ 16kHz, PCM16 mono
@@ -107,17 +110,28 @@ async def _send_sms_direct(phone: str, message: str) -> dict[str, Any]:
             "error": "Missing SMS_API_KEY/SMS_API_SECRET",
         }
 
+
+
     payload = {
         "api_key": api_key,
         "api_secret": api_secret,
         "to": phone,
         "from": sms_from,
+        "channel": "sms",
+        "message_type": "text",
         "text": message,
     }
 
     try:
+        credentials = base64.b64encode(f"{api_key}:{api_secret}".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
         async with httpx.AsyncClient(timeout=12.0) as client:
-            response = await client.post("https://api.vonage.com/v1/messages", data=payload)
+            response = await client.post("https://api.nexmo.com/v1/messages", headers= headers, json=payload)
             response.raise_for_status()
             data = response.json() if response.text else {}
             first = (data.get("messages") or [{}])[0]
@@ -211,27 +225,30 @@ def _parse_appointment_datetime(date_value: str, time_value: str) -> datetime | 
 
 
 async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: int) -> None:
-    if not os.getenv("OPENAI_API_KEY"):
-        logger.warning("OPENAI_API_KEY not set. Voice agent cannot run.")
+    # Nova Sonic authenticates with AWS SigV4 credentials, not OPENAI_API_KEY.
+    # Fail loudly here so a missing credential is obvious instead of a silent
+    # "connected but no audio" failure.
+    if not os.getenv("AWS_ACCESS_KEY_ID") or not os.getenv("AWS_SECRET_ACCESS_KEY"):
+        logger.error(
+            "AWS credentials missing. AWSNovaSonicLLMService needs AWS_ACCESS_KEY_ID "
+            "and AWS_SECRET_ACCESS_KEY (plus AWS_SESSION_TOKEN for temporary credentials). "
+            "Voice agent cannot run."
+        )
         return
 
-    llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"))
-
-    stt = OpenAIRealtimeSTTService(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        turn_detection=None,
-        settings=OpenAIRealtimeSTTService.Settings(
-            model="gpt-4o-transcribe",
-            prompt="Expect medical terms, symptoms, dates, and appointment scheduling language.",
-            noise_reduction="near_field",
+    nova_sonic = AWSNovaSonicLLMService(
+        access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        session_token=os.getenv("AWS_SESSION_TOKEN"),
+        region=os.getenv("AWS_REGION"),
+        # 16kHz in / 24kHz out (Nova Sonic native); the transport resamples out.
+        audio_config=AudioConfig(
+            input_sample_rate=16000,
+            output_sample_rate=24000,
         ),
-    )
-
-    tts = OpenAITTSService(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        settings=OpenAITTSService.Settings(
-            voice="coral",
-            instructions="Speak clearly and calmly. There may be literal \\n characters; ignore them when speaking.",
+        settings=AWSNovaSonicLLMService.Settings(
+            voice="tiffany",
+            endpointing_sensitivity="HIGH",
         ),
     )
 
@@ -454,10 +471,10 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: in
         await params.result_callback({"success": True})
         await params.llm.push_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
-    llm.register_function("save_triage_transcript", save_triage_transcript)
-    llm.register_function("lookup_appointment_availability", lookup_appointment_availability)
-    llm.register_function("schedule_appointment_and_notify", schedule_appointment_and_notify)
-    llm.register_function("end_call", end_call)
+    nova_sonic.register_function("save_triage_transcript", save_triage_transcript)
+    nova_sonic.register_function("lookup_appointment_availability", lookup_appointment_availability)
+    nova_sonic.register_function("schedule_appointment_and_notify", schedule_appointment_and_notify)
+    nova_sonic.register_function("end_call", end_call)
 
     tools = ToolsSchema(
         standard_tools=[
@@ -539,7 +556,13 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: in
                 "otherwise clearly say notifications are pending and should be retried. "
                 "Finally call end_call."
             ),
-        }
+        },
+        {
+            # Nova Sonic + LLMRunFrame only responds when the context ends in a
+            # user message. This seed turn makes the bot greet on connect.
+            "role": "user",
+            "content": "Greet the patient and begin the triage.",
+        },
     ]
 
     context = LLMContext(messages, tools=tools)
@@ -548,10 +571,8 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool, sample_rate: in
     pipeline = Pipeline(
         [
             transport.input(),
-            stt,
             context_aggregator.user(),
-            llm,
-            tts,
+            nova_sonic,
             transport.output(),
             context_aggregator.assistant(),
         ]
@@ -602,6 +623,7 @@ async def bot(runner_args: RunnerArguments) -> None:
             audio_out_enabled=True,
             add_wav_header=False,
             fixed_audio_packet_size=VONAGE_AUDIO_PACKET_BYTES,
+            vad_analyzer=SileroVADAnalyzer(params=VADParams(start_secs=0.01, stop_secs=0.01)),
             serializer=serializer,
         ),
     )
